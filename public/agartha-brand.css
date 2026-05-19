@@ -1,0 +1,14 @@
+/* Agartha brand font suggestion */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --agartha-bg: #050509;
+  --agartha-panel: #0B0B0F;
+  --agartha-text: #F2F2F7;
+  --agartha-muted: #B9B3D6;
+  --agartha-violet: #7C5CFF;
+  --agartha-border: #2A2238;
+  --font-display: 'Space Grotesk', 'Sora', 'Outfit', sans-serif;
+  --font-body: 'IBM Plex Sans', Inter, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}

@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --font-family-sans: 'Manrope', 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --background: #050509;
+  --background-secondary: #0B0714;
+  --foreground: #F4F0FF;
+  --card: #0B0714;
+  --card-foreground: #F4F0FF;
+  --popover: #0B0714;
+  --popover-foreground: #F4F0FF;
+  --primary: #8B5CF6;
+  --primary-foreground: #F4F0FF;
+  --primary-strong: #A855F7;
+  --secondary: #2A2238;
+  --secondary-foreground: #F4F0FF;
+  --muted: #1A1625;
+  --muted-foreground: #A9A3B8;
+  --accent: #8B5CF6;
+  --accent-foreground: #F4F0FF;
+  --accent-cyan: #22D3EE;
+  --destructive: #d4183d;
+  --destructive-foreground: #F4F0FF;
+  --border: #2A2238;
+  --input: #2A2238;
+  --input-background: #0B0714;
+  --switch-background: #2A2238;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #8B5CF6;
+  --chart-1: #8B5CF6;
+  --chart-2: #A855F7;
+  --chart-3: #22D3EE;
+  --chart-4: #A9A3B8;
+  --chart-5: #F4F0FF;
+  --radius: 0.625rem;
+  --sidebar: #0B0714;
+  --sidebar-foreground: #F4F0FF;
+  --sidebar-primary: #8B5CF6;
+  --sidebar-primary-foreground: #F4F0FF;
+  --sidebar-accent: #2A2238;
+  --sidebar-accent-foreground: #F4F0FF;
+  --sidebar-border: #2A2238;
+  --sidebar-ring: #8B5CF6;
+}

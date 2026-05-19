@@ -1,0 +1,23 @@
+<svg width="860" height="160" viewBox="0 0 860 160" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">Agartha wordmark</title>
+  <desc id="desc">Mot-symbole Agartha.</desc>
+  
+    <defs>
+      <linearGradient id="agarthaViolet" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#9B7CFF"/>
+        <stop offset="100%" stop-color="#7C5CFF"/>
+      </linearGradient>
+      <linearGradient id="agarthaText" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#FFFFFF"/>
+        <stop offset="56%" stop-color="#F2F2F7"/>
+        <stop offset="100%" stop-color="#B9B3D6"/>
+      </linearGradient>
+      <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="2.8" result="blur"/>
+        <feColorMatrix in="blur" type="matrix" values="0.49 0 0 0 0  0.36 0 0 0 0  1 0 0 0 0  0 0 0 0.42 0" result="glow"/>
+        <feMerge><feMergeNode in="glow"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    
+  <text x="24" y="103" font-family="Space Grotesk, Sora, Outfit, Inter, Arial, sans-serif" font-weight="600" font-size="82" letter-spacing="16" fill="url(#agarthaText)">AGARTHA</text>
+</svg>
