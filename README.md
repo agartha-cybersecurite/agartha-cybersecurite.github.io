@@ -1,4 +1,4 @@
-# Agartha — Brand assets
+# Agartha - Brand assets
 
 Assets prêts à déposer dans le dossier `public/` du projet.
 
@@ -30,7 +30,7 @@ Assets prêts à déposer dans le dossier `public/` du projet.
 ou, pour un hero :
 
 ```html
-<img src="/logo-agartha-title.svg" alt="Agartha — Sécurité applicative" />
+<img src="/logo-agartha-title.svg" alt="Agartha - Sécurité applicative" />
 ```
 
 ## Palette

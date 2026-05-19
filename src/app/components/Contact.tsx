@@ -36,7 +36,7 @@ export default function Contact() {
                 <div>
                   <div className="mb-1 text-foreground">Localisation</div>
                   <div className="text-muted-foreground">
-                    Basés à Niort — interventions à distance ou sur site
+                    Basés à Niort - interventions à distance ou sur site
                   </div>
                 </div>
               </div>
