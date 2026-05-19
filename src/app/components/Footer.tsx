@@ -35,7 +35,7 @@ export default function Footer() {
           <div>
             <h4 className="mb-4 text-sm text-foreground">Contact</h4>
             <ul className="space-y-3 text-sm text-muted-foreground">
-              <li><a href="mailto:contact@agartha-cyber.fr" className="break-all transition-colors hover:text-primary">contact@agartha-cyber.fr</a></li>
+              <li><a href="mailto:agartha.cybersecurite@gmail.com" className="break-all transition-colors hover:text-primary">agartha.cybersecurite@gmail.com</a></li>
               <li><a href="#contact" className="transition-colors hover:text-primary">Formulaire</a></li>
             </ul>
           </div>

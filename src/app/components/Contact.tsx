@@ -25,8 +25,8 @@ export default function Contact() {
                 <Mail className="w-6 h-6 mt-1 text-primary" strokeWidth={1.5} />
                 <div>
                   <div className="mb-1 text-foreground">Email</div>
-                  <a href="mailto:contact@agartha-cyber.fr" className="text-muted-foreground hover:text-primary transition-colors">
-                    contact@agartha-cyber.fr
+                  <a href="mailto:agartha.cybersecurite@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">
+                    agartha.cybersecurite@gmail.com
                   </a>
                 </div>
               </div>
