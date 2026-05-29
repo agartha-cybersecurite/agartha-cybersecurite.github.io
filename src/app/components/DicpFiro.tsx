@@ -6,9 +6,9 @@ const dicpItems = [
     label: 'Disponibilité',
     question: "Que se passe-t-il si l'application n'est plus accessible ?",
     examples: [
-      "Si l'application est indisponible 1h, quel est l'impact ?",
-      "Si elle est indisponible 24h, perdez-vous de l'argent ?",
-      'Cela bloque-t-il une équipe, un service ou un processus ?',
+      "Indisponible 1h : quel est l'impact immédiat ?",
+      "Indisponible 24h : perte financière ? blocage d'équipe ?",
+      "Un processus métier critique dépend-il de cette application ?",
     ],
   },
   {
@@ -27,8 +27,8 @@ const dicpItems = [
     question: 'Que se passe-t-il si des données sont exposées ou consultées sans autorisation ?',
     examples: [
       'Y a-t-il des données personnelles, sensibles ou contractuelles ?',
-      'Une fuite entraînerait-elle une obligation de notification (RGPD) ?',
-      "Quel serait l'impact réputationnel pour l'entreprise ?",
+      'Une fuite déclencherait-elle une notification RGPD ?',
+      'Quel serait l\'impact réputationnel pour l\'entreprise ?',
     ],
   },
   {
@@ -85,7 +85,7 @@ export default function DicpFiro() {
           </h2>
           <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
             Lors de la qualification, nous travaillons avec le métier pour mesurer l'impact réel qu'aurait un incident sur l'activité.
-            L'objectif est de construire un accompagnement sur mesure, adapté à la criticité réelle de l'application — et non une analyse générique.
+            L'objectif est de construire un accompagnement sur mesure — et non une analyse générique.
           </p>
         </motion.div>
 
@@ -98,7 +98,7 @@ export default function DicpFiro() {
             transition={{ duration: 0.6 }}
           >
             <div className="mb-2 font-mono text-sm tracking-widest uppercase text-primary">DICP</div>
-            <p className="mb-5 text-sm text-muted-foreground">Axes de sensibilité — questions concrètes posées avec le métier.</p>
+            <p className="mb-5 text-sm text-muted-foreground">Axes de sensibilité — on pose des questions concrètes avec le métier.</p>
             <div className="space-y-3">
               {dicpItems.map(item => (
                 <div key={item.letter} className="border border-border bg-card p-4 hover:border-primary/40 transition-colors">
@@ -164,7 +164,7 @@ export default function DicpFiro() {
           </motion.div>
         </div>
 
-        {/* Example table */}
+        {/* Example grid */}
         <motion.div
           className="border border-border bg-card p-6 sm:p-8"
           initial={{ opacity: 0, y: 20 }}
@@ -177,7 +177,7 @@ export default function DicpFiro() {
               Exemple — Axe Disponibilité
             </div>
             <p className="text-sm text-muted-foreground">
-              Chaque axe DICP est noté de 1 à 4 selon les quatre dimensions FIRO. Le score final = valeur FIRO la plus haute.
+              Chaque axe DICP est noté de 1 à 4 selon les quatre dimensions FIRO. Le score final de l'axe correspond à l'impact FIRO le plus élevé.
             </p>
           </div>
 
@@ -222,6 +222,9 @@ export default function DicpFiro() {
                 <span>{label}</span>
               </span>
             ))}
+            <span className="ml-auto text-xs text-muted-foreground self-center">
+              Score final = valeur FIRO la plus haute
+            </span>
           </div>
         </motion.div>
       </div>
