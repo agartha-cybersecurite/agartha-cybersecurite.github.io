@@ -20,12 +20,12 @@ export default function Header() {
           <AgarthaLogo className="h-9 w-auto sm:h-11 lg:h-13" />
         </a>
 
-        <nav className="hidden items-center gap-4 xl:flex xl:gap-8" aria-label="Navigation principale">
+        <nav className="hidden items-center gap-4 xl:flex xl:gap-6" aria-label="Navigation principale">
           {navLinks.map(link => (
             <a
               key={link.href}
               href={link.href}
-              className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+              className="text-xs text-muted-foreground transition-colors hover:text-foreground xl:text-sm"
             >
               {link.label}
             </a>
@@ -50,6 +50,7 @@ export default function Header() {
         </div>
       </div>
 
+      {/* Mobile / tablet menu */}
       {menuOpen && (
         <div className="border-t border-border bg-background/96 backdrop-blur-md xl:hidden">
           <nav

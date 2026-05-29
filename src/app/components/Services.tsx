@@ -1,74 +1,118 @@
 import { motion } from 'motion/react';
-import { ArrowRight, Search, MessageSquare, BarChart3, Zap } from 'lucide-react';
+import { ArrowRight, Search, MessageSquare, Shield, BarChart3, Zap, ScanSearch, CalendarDays } from 'lucide-react';
 
 const services = [
   {
     icon: Search,
     number: '01',
     title: "Qualification d'accompagnement",
-    dicp: null,
-    billing: 'Entrée de toute prestation',
-    billingDetail: 'Inclus dans l\'accompagnement',
+    price: 'À partir de 1 200 € HT',
+    duration: '4h à 8h',
     description:
-      "Premier contact structuré : fiche projet, identification des interlocuteurs, compréhension des enjeux métier et scoring DICP/FIRO. Ce premier rendu détermine le niveau d'accompagnement adapté.",
+      "Cadrer le projet, identifier les interlocuteurs, comprendre les enjeux métier et qualifier la sensibilité DICP/FIRO. Détermine le niveau d'accompagnement recommandé.",
     deliverables: [
-      'Fiche projet (interlocuteurs, calendrier, criticité)',
+      'Fiche projet',
       'Score DICP/FIRO',
-      'Décision d\'accompagnement avec avis et commentaires',
+      "Recommandation du niveau d'accompagnement",
+      'Première vision des points d\'attention',
     ],
-    note: null,
   },
   {
     icon: MessageSquare,
     number: '02',
     title: 'Conseil au projet',
-    dipBadgeColor: 'text-green-400 border-green-400/40 bg-green-400/10',
-    billing: '2 à 3 jours travaillés',
-    billingDetail: 'Facturation à la journée',
+    price: 'À partir de 1 400 € HT',
+    duration: '2 à 3 jours',
     description:
-      "Pour les projets peu critiques : suivi du projet, échanges verbaux, recommandations orales et regard sécurité ponctuel. Pas de rendu formel.",
+      "Accompagnement léger pour un projet peu critique : échanges avec les équipes, recommandations orales, aide à la priorisation et regard sécurité ponctuel. Pas de livrable formalisé par défaut.",
     deliverables: [
       'Recommandations orales',
-      'Échanges et conseils ponctuels',
+      'Compte rendu synthétique en option',
     ],
-    note: 'Avis sécurité : même prestation avec rendu formel (favorable / favorable avec réserves / défavorable). Facturation journée + rendu.',
+  },
+  {
+    icon: Shield,
+    number: '03',
+    title: 'Avis sécurité projet',
+    price: 'À partir de 3 000 € HT',
+    duration: '2 à 4 jours + livrable',
+    description:
+      "Décision formalisée avant livraison, jalon projet ou mise en production : favorable, favorable avec réserves ou défavorable.",
+    deliverables: [
+      'Avis sécurité projet',
+      'Synthèse des risques principaux',
+      'Réserves éventuelles',
+      'Conditions de mise en production',
+      'Recommandations prioritaires',
+    ],
   },
   {
     icon: BarChart3,
-    number: '03',
-    title: 'Socle de base',
-    dipBadgeColor: 'text-yellow-400 border-yellow-400/40 bg-yellow-400/10',
-    billing: '~1 semaine',
-    billingDetail: 'Facturation à la journée',
+    number: '04',
+    title: 'Socle de base sécurité',
+    price: 'À partir de 4 700 € HT',
+    duration: '~5 jours + livrable',
     description:
-      "Dossier sécurité structuré pour une application sensible. Analyse des risques métier et techniques, matrice de risques, préconisations priorisées et plan d'actions.",
+      "Dossier sécurité structuré pour une application sensible. Format intermédiaire entre le conseil projet et l'analyse de risque approfondie.",
     deliverables: [
       'Introduction et contexte projet',
       'Analyse DICP/FIRO',
-      'Risques identifiés avec matrice de criticité',
+      'Synthèse des risques',
+      'Matrice de risques',
       'Préconisations',
-      "Plan d'actions priorisé",
+      "Plan d'action priorisé",
     ],
-    note: null,
   },
   {
     icon: Zap,
-    number: '04',
-    title: 'Analyse de risque',
-    dipBadgeColor: 'text-red-400 border-red-400/40 bg-red-400/10',
-    billing: '~2 semaines',
-    billingDetail: 'Facturation à la journée',
+    number: '05',
+    title: 'Analyse de risque renforcée',
+    price: 'À partir de 11 000 € HT',
+    duration: '10 à 15 jours + livrables',
     description:
-      "Analyse approfondie pour application critique ou contexte réglementaire. Conformités applicables, PCA/PRA, Plan d'Assurance Sécurité et audit technique de l'application.",
+      "Pour les applications critiques ou les contextes réglementaires : analyse structurée, conformité applicable, PCA/PRA, Plan d'Assurance Sécurité et audit technique.",
     deliverables: [
       'Analyse de risque complète',
-      'Analyse d\'écarts (DORA, NIS2, RGPD, OSE…)',
-      'Plan d\'Assurance Sécurité (PAS)',
-      'Éléments PCA/PRA',
-      'Audit technique applicatif',
-      "Plan d'actions détaillé",
+      'Matrice de risques détaillée',
+      'Synthèse dirigeant',
+      "Analyse d'écarts (DORA, NIS2, RGPD…)",
+      "Plan d'Assurance Sécurité",
+      'Éléments PCA/PRA si inclus',
+      'Audit technique si inclus',
+      "Plan d'action détaillé",
     ],
-    note: null,
+  },
+  {
+    icon: ScanSearch,
+    number: '06',
+    title: 'Audit technique applicatif',
+    price: 'À partir de 3 500 € HT',
+    duration: '3 à 5 jours',
+    description:
+      "Évaluer l'exposition et l'hygiène sécurité d'une application. Prise d'empreinte, technologies visibles, configurations sensibles, CVE potentielles. Distinct d'un pentest intrusif complet.",
+    deliverables: [
+      "Rapport d'audit technique",
+      "Cartographie de l'exposition",
+      'Analyse TLS, headers, cookies, CORS, CSP',
+      'CVE potentielles sur composants exposés',
+      'Recommandations techniques',
+      "Plan d'action priorisé",
+    ],
+  },
+  {
+    icon: CalendarDays,
+    number: '07',
+    title: 'Accompagnement mensuel',
+    price: 'À partir de 700 € HT / mois',
+    duration: '1 à 6 jours / mois',
+    description:
+      "Suivi régulier de la sécurité applicative : revue des risques, conseil projet, suivi des corrections, préparation des jalons et mise à jour du plan d'action.",
+    deliverables: [
+      'Point mensuel de suivi',
+      'Revue des risques',
+      "Plan d'action mis à jour",
+      'Conseil sécurité projet',
+    ],
   },
 ];
 
@@ -96,7 +140,7 @@ export default function Services() {
           </p>
         </motion.div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:gap-8">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {services.map((service, index) => (
             <motion.div
               key={index}
@@ -104,32 +148,22 @@ export default function Services() {
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: (index % 2) * 0.1 }}
+              transition={{ duration: 0.6, delay: (index % 3) * 0.1 }}
             >
               <div className="flex-1 p-6 sm:p-7">
-                <div className="mb-5 flex items-start justify-between gap-3">
+                <div className="mb-5 flex items-start justify-between">
                   <service.icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
                   <span className="font-mono text-3xl font-light text-border">{service.number}</span>
                 </div>
-
-                <h3 className="mb-2 text-base sm:text-lg text-foreground leading-snug">{service.title}</h3>
-
-                {service.dicp && (
-                  <span className={`mb-3 inline-block border px-2.5 py-0.5 font-mono text-[0.6rem] tracking-wide ${service.dipBadgeColor}`}>
-                    {service.dicp}
-                  </span>
-                )}
-
-                <div className="mb-4 flex items-baseline gap-2">
-                  <span className="text-sm font-medium text-primary">{service.billing}</span>
-                  <span className="text-xs text-muted-foreground">{service.billingDetail}</span>
+                <h3 className="mb-1 text-base sm:text-lg text-foreground leading-snug">{service.title}</h3>
+                <div className="mb-4 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
+                  <span className="text-sm font-medium text-primary">{service.price}</span>
+                  <span className="font-mono text-[0.6rem] tracking-wide text-muted-foreground">{service.duration}</span>
                 </div>
-
                 <p className="mb-5 text-sm text-muted-foreground leading-relaxed">{service.description}</p>
-
                 <div>
                   <div className="mb-2 font-mono text-[0.65rem] uppercase tracking-wide text-muted-foreground">
-                    {service.number === '02' ? 'Échanges' : 'Livrables'}
+                    Livrables
                   </div>
                   <ul className="space-y-1.5">
                     {service.deliverables.map((item, i) => (
@@ -140,17 +174,7 @@ export default function Services() {
                     ))}
                   </ul>
                 </div>
-
-                {service.note && (
-                  <div className="mt-4 border-t border-border pt-4">
-                    <p className="text-xs leading-relaxed text-muted-foreground/70">
-                      <span className="text-foreground/60 font-medium">Variante — </span>
-                      {service.note}
-                    </p>
-                  </div>
-                )}
               </div>
-
               <div className="border-t border-border p-4">
                 <a
                   href="#contact"
@@ -163,16 +187,6 @@ export default function Services() {
             </motion.div>
           ))}
         </div>
-
-        <motion.p
-          className="mt-8 text-xs text-muted-foreground border-t border-border pt-6"
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-        >
-          Des jours supplémentaires peuvent être facturés en cas de besoin : présence en comités de calendrier (C2I, CESI, CVASI, MEP), ateliers additionnels, retest ou livrables spécifiques.
-        </motion.p>
       </div>
     </section>
   );

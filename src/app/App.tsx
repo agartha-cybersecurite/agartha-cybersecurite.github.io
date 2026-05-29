@@ -17,7 +17,7 @@ export default function App() {
       <Header />
       <Hero />
       <Problem />
-      {/*<DicpFiro />*/}
+      <DicpFiro />
       <Services />
       <Process />
       <Deliverables />
