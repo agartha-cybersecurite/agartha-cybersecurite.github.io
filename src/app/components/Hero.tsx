@@ -24,19 +24,14 @@ export default function Hero() {
         </svg>
       </div>
 
-      {/* Animated scan lines */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          className="absolute left-0 top-1/4 h-px w-full bg-gradient-to-r from-transparent via-primary/15 to-transparent"
-          animate={{ x: ['-100%', '100%'] }}
-          transition={{ duration: 22, repeat: Infinity, ease: 'linear' }}
-        />
-        <motion.div
-          className="absolute left-0 top-3/4 h-px w-full bg-gradient-to-r from-transparent via-accent-cyan/10 to-transparent"
-          animate={{ x: ['100%', '-100%'] }}
-          transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
-        />
-      </div>
+      {/* Slow-breathing secondary halo */}
+      <motion.div
+        className="absolute inset-0 pointer-events-none"
+        animate={{ opacity: [0.4, 0.7, 0.4] }}
+        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+      >
+        <div className="absolute bottom-0 left-1/3 h-[min(60vw,600px)] w-[min(60vw,600px)] -translate-x-1/2 rounded-full bg-primary/4 blur-[120px]" />
+      </motion.div>
 
       <div className="relative z-10 mx-auto w-full max-w-5xl text-center">
         {/* Label */}
@@ -115,7 +110,7 @@ export default function Hero() {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </a>
           <a
-            href="#methode"
+            href="#dicp-firo"
             className="border border-border px-6 py-4 text-center text-foreground transition-colors hover:border-primary/50 sm:px-8"
           >
             Comprendre notre approche
