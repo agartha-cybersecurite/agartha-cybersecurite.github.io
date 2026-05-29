@@ -1,0 +1,967 @@
+From 916ed01b612ed06b6d5de2fbc83aa5342db6ebd5 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 29 May 2026 15:38:11 +0000
+Subject: [PATCH] Refonte services, process et DICP/FIRO selon le
+ positionnement Agartha
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Process : diagramme ramifié exact (Échange → Qualification → 3 tracks → Recette → Fin)
+- Services : 4 niveaux avec critères DICP, suppression prix fixes, facturation à la journée
+- DicpFiro : questions concrètes par axe + table score → niveau d'accompagnement
+- Pricing : durées estimatives par niveau, note sur jours supplémentaires
+- Suppression de Method et Limits ; nav mise à jour (DICP/FIRO remplace Méthode)
+
+https://claude.ai/code/session_01DxGgvEqyUdW1MRUPnhL2hH
+---
+ src/app/App.tsx                 |   4 -
+ src/app/components/DicpFiro.tsx | 122 +++++++++++-----
+ src/app/components/Header.tsx   |   2 +-
+ src/app/components/Pricing.tsx  |  84 ++++++++---
+ src/app/components/Process.tsx  | 243 +++++++++++++++++++++++---------
+ src/app/components/Services.tsx | 179 ++++++++++++-----------
+ 6 files changed, 427 insertions(+), 207 deletions(-)
+
+diff --git a/src/app/App.tsx b/src/app/App.tsx
+index ae4096a..2b9897a 100644
+--- a/src/app/App.tsx
++++ b/src/app/App.tsx
+@@ -1,12 +1,10 @@
+ import Header from './components/Header';
+ import Hero from './components/Hero';
+ import Problem from './components/Problem';
+-import Method from './components/Method';
+ import DicpFiro from './components/DicpFiro';
+ import Services from './components/Services';
+ import Process from './components/Process';
+ import Deliverables from './components/Deliverables';
+-import Limits from './components/Limits';
+ import Compliance from './components/Compliance';
+ import Pricing from './components/Pricing';
+ import About from './components/About';
+@@ -19,12 +17,10 @@ export default function App() {
+       <Header />
+       <Hero />
+       <Problem />
+-      <Method />
+       <DicpFiro />
+       <Services />
+       <Process />
+       <Deliverables />
+-      <Limits />
+       <Compliance />
+       <Pricing />
+       <About />
+diff --git a/src/app/components/DicpFiro.tsx b/src/app/components/DicpFiro.tsx
+index 6dae442..dd071e4 100644
+--- a/src/app/components/DicpFiro.tsx
++++ b/src/app/components/DicpFiro.tsx
+@@ -4,34 +4,72 @@ const dicpItems = [
+   {
+     letter: 'D',
+     label: 'Disponibilité',
+-    question: "Que se passe-t-il si l'application n'est plus accessible ?"
++    question: "Que se passe-t-il si l'application n'est plus accessible ?",
++    examples: [
++      "Si l'application est indisponible 1h, quel est l'impact ?",
++      'Si elle est indisponible 24h, perdez-vous de l\'argent ?',
++      'Cela bloque-t-il une équipe, un service ou un processus ?',
++    ],
+   },
+   {
+     letter: 'I',
+     label: 'Intégrité',
+-    question: 'Que se passe-t-il si les données sont altérées, fausses ou incohérentes ?'
++    question: 'Que se passe-t-il si les données sont altérées, fausses ou incohérentes ?',
++    examples: [
++      'Des décisions métier reposent-elles sur ces données ?',
++      'Une erreur dans les données aurait-elle un impact financier ou légal ?',
++      'Peut-on détecter une altération rapidement ?',
++    ],
+   },
+   {
+     letter: 'C',
+     label: 'Confidentialité',
+-    question: 'Que se passe-t-il si des données sont exposées ou consultées sans autorisation ?'
++    question: 'Que se passe-t-il si des données sont exposées ou consultées sans autorisation ?',
++    examples: [
++      'Y a-t-il des données personnelles, sensibles ou contractuelles ?',
++      'Une fuite entraînerait-elle une obligation de notification (RGPD) ?',
++      'Quel serait l\'impact réputationnel pour l\'entreprise ?',
++    ],
+   },
+   {
+     letter: 'P',
+     label: 'Preuve',
+-    question: "Que se passe-t-il si l'entreprise ne peut plus prouver une action, une décision ou un événement ?"
+-  }
++    question: "Que se passe-t-il si l'entreprise ne peut plus prouver une action, une décision ou un événement ?",
++    examples: [
++      "L'application trace-t-elle les actions utilisateurs ?",
++      'Des logs sont-ils conservés et exploitables en cas de litige ?',
++      'Y a-t-il des obligations légales ou contractuelles de traçabilité ?',
++    ],
++  },
+ ];
+ 
+ const firoItems = [
+-  { letter: 'F', label: 'Finance', description: 'Pertes financières, coûts de correction, pénalités.' },
++  { letter: 'F', label: 'Finance', description: 'Pertes financières, coûts de correction, pénalités contractuelles.' },
+   { letter: 'I', label: 'Image', description: 'Réputation, confiance client, atteinte à la marque.' },
+-  { letter: 'R', label: 'Réglementaire', description: 'Obligations légales, contractuelles ou sectorielles.' },
+-  { letter: 'O', label: 'Organisationnel', description: "Blocage des équipes, continuité d'activité, processus internes." }
++  { letter: 'R', label: 'Réglementaire', description: 'Obligations légales, conformité, exigences contractuelles ou sectorielles.' },
++  { letter: 'O', label: 'Organisationnel', description: "Blocage des équipes, continuité d'activité, impact sur les processus internes." },
+ ];
+ 
+ const exampleScores = [3, 2, 1, 4];
+ 
++const scoreThresholds = [
++  {
++    range: '1/1/1/1 ou max un 2',
++    label: 'Conseil au projet',
++    color: 'text-green-400 border-green-400/30 bg-green-400/5',
++  },
++  {
++    range: 'Plus d\'un 2',
++    label: 'Socle de base',
++    color: 'text-yellow-400 border-yellow-400/30 bg-yellow-400/5',
++  },
++  {
++    range: 'Au moins un 4',
++    label: 'Analyse de risque',
++    color: 'text-red-400 border-red-400/30 bg-red-400/5',
++  },
++];
++
+ function scoreClasses(score: number) {
+   if (score >= 4) return 'text-red-400 bg-red-400/10 border-red-400/30';
+   if (score >= 3) return 'text-orange-400 bg-orange-400/10 border-orange-400/30';
+@@ -58,8 +96,8 @@ export default function DicpFiro() {
+             <span className="text-primary">DICP / FIRO</span>.
+           </h2>
+           <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+-            La qualification DICP/FIRO permet d'évaluer la sensibilité d'une application avant d'engager une analyse
+-            technique ou une analyse de risque plus approfondie.
++            Lors de la qualification, nous travaillons avec le métier pour mesurer l'impact réel qu'aurait un incident sur l'activité.
++            L'objectif est de construire un accompagnement sur mesure, adapté à la criticité réelle de l'application — et non une analyse générique.
+           </p>
+         </motion.div>
+ 
+@@ -72,20 +110,30 @@ export default function DicpFiro() {
+             transition={{ duration: 0.6 }}
+           >
+             <div className="mb-2 font-mono text-sm tracking-widest uppercase text-primary">DICP</div>
+-            <p className="mb-5 text-sm text-muted-foreground">Axes de sensibilité du système d'information.</p>
++            <p className="mb-5 text-sm text-muted-foreground">Axes de sensibilité — on pose des questions concrètes avec le métier.</p>
+             <div className="space-y-3">
+               {dicpItems.map(item => (
+                 <div
+                   key={item.letter}
+-                  className="flex gap-4 border border-border bg-card p-4 hover:border-primary/40 transition-colors"
++                  className="border border-border bg-card p-4 hover:border-primary/40 transition-colors"
+                 >
+-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-primary/40 bg-primary/10 font-mono text-sm font-medium text-primary">
+-                    {item.letter}
+-                  </div>
+-                  <div>
+-                    <div className="mb-1 text-sm font-medium text-foreground">{item.label}</div>
+-                    <div className="text-xs leading-relaxed text-muted-foreground">{item.question}</div>
++                  <div className="flex gap-4 mb-3">
++                    <div className="flex h-8 w-8 shrink-0 items-center justify-center border border-primary/40 bg-primary/10 font-mono text-sm font-medium text-primary">
++                      {item.letter}
++                    </div>
++                    <div>
++                      <div className="mb-0.5 text-sm font-medium text-foreground">{item.label}</div>
++                      <div className="text-xs leading-relaxed text-muted-foreground">{item.question}</div>
++                    </div>
+                   </div>
++                  <ul className="ml-12 space-y-1">
++                    {item.examples.map((ex, i) => (
++                      <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground/60">
++                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-primary/30" />
++                        {ex}
++                      </li>
++                    ))}
++                  </ul>
+                 </div>
+               ))}
+             </div>
+@@ -99,8 +147,8 @@ export default function DicpFiro() {
+             transition={{ duration: 0.6 }}
+           >
+             <div className="mb-2 font-mono text-sm tracking-widest uppercase text-accent-cyan">FIRO</div>
+-            <p className="mb-5 text-sm text-muted-foreground">Dimensions d'impact sur l'organisation.</p>
+-            <div className="space-y-3">
++            <p className="mb-5 text-sm text-muted-foreground">Dimensions d'impact — chaque axe DICP est évalué selon ces quatre dimensions.</p>
++            <div className="space-y-3 mb-6">
+               {firoItems.map(item => (
+                 <div
+                   key={item.letter}
+@@ -116,6 +164,21 @@ export default function DicpFiro() {
+                 </div>
+               ))}
+             </div>
++
++            {/* Score → Accompagnement */}
++            <div className="border border-border bg-card p-5">
++              <div className="mb-3 font-mono text-[0.65rem] tracking-wide uppercase text-muted-foreground">
++                Score DICP → Niveau d'accompagnement
++              </div>
++              <div className="space-y-2">
++                {scoreThresholds.map((t, i) => (
++                  <div key={i} className={`flex items-center justify-between border px-3 py-2 text-xs ${t.color}`}>
++                    <span className="font-mono">{t.range}</span>
++                    <span className="font-medium">{t.label}</span>
++                  </div>
++                ))}
++              </div>
++            </div>
+           </motion.div>
+         </div>
+ 
+@@ -132,8 +195,7 @@ export default function DicpFiro() {
+               Exemple — Axe Disponibilité
+             </div>
+             <p className="text-sm text-muted-foreground">
+-              Pour chaque axe DICP, les impacts FIRO sont notés de 1 à 4. Le score final de l'axe correspond à
+-              l'impact FIRO le plus élevé. Ce score oriente le niveau d'accompagnement recommandé.
++              Chaque axe DICP est noté de 1 à 4 selon les quatre dimensions FIRO. Le score final de l'axe correspond à l'impact FIRO le plus élevé.
+             </p>
+           </div>
+ 
+@@ -155,17 +217,13 @@ export default function DicpFiro() {
+                   <td className="py-3 pr-4 font-medium text-foreground">Disponibilité</td>
+                   {exampleScores.map((score, i) => (
+                     <td key={i} className="py-3 text-center">
+-                      <span
+-                        className={`inline-flex h-7 w-7 items-center justify-center border font-mono text-xs font-medium ${scoreClasses(score)}`}
+-                      >
++                      <span className={`inline-flex h-7 w-7 items-center justify-center border font-mono text-xs font-medium ${scoreClasses(score)}`}>
+                         {score}
+                       </span>
+                     </td>
+                   ))}
+                   <td className="py-3 text-center">
+-                    <span
+-                      className={`inline-flex h-7 items-center justify-center border px-3 font-mono text-xs font-medium ${scoreClasses(4)}`}
+-                    >
++                    <span className={`inline-flex h-7 items-center justify-center border px-3 font-mono text-xs font-medium ${scoreClasses(4)}`}>
+                       4 — Critique
+                     </span>
+                   </td>
+@@ -176,15 +234,15 @@ export default function DicpFiro() {
+ 
+           <div className="mt-5 flex flex-wrap gap-2 border-t border-border pt-4">
+             {Object.entries(scoreLabels).map(([score, label]) => (
+-              <span
+-                key={score}
+-                className={`flex items-center gap-1.5 border px-2.5 py-1 text-xs ${scoreClasses(parseInt(score))}`}
+-              >
++              <span key={score} className={`flex items-center gap-1.5 border px-2.5 py-1 text-xs ${scoreClasses(parseInt(score))}`}>
+                 <span className="font-mono font-medium">{score}</span>
+                 <span>—</span>
+                 <span>{label}</span>
+               </span>
+             ))}
++            <span className="ml-auto text-xs text-muted-foreground self-center">
++              Le score final = valeur FIRO la plus haute
++            </span>
+           </div>
+         </motion.div>
+       </div>
+diff --git a/src/app/components/Header.tsx b/src/app/components/Header.tsx
+index 46947bd..85a8adc 100644
+--- a/src/app/components/Header.tsx
++++ b/src/app/components/Header.tsx
+@@ -4,7 +4,7 @@ import { AgarthaLogo } from '../../components/AgarthaLogo';
+ 
+ const navLinks = [
+   { label: 'Accueil', href: '#' },
+-  { label: 'Méthode', href: '#methode' },
++  { label: 'DICP / FIRO', href: '#dicp-firo' },
+   { label: 'Services', href: '#services' },
+   { label: 'Process', href: '#process' },
+   { label: 'Livrables', href: '#livrables' },
+diff --git a/src/app/components/Pricing.tsx b/src/app/components/Pricing.tsx
+index febec6b..7c7d5d5 100644
+--- a/src/app/components/Pricing.tsx
++++ b/src/app/components/Pricing.tsx
+@@ -2,13 +2,40 @@ import { motion } from 'motion/react';
+ import { ArrowRight } from 'lucide-react';
+ 
+ const pricingRows = [
+-  { service: "Qualification d'accompagnement", price: "À partir de 1 200 € HT", badge: "Entrée" },
+-  { service: "Conseil au projet", price: "À partir de 1 400 € HT", badge: "Léger" },
+-  { service: "Avis sécurité projet", price: "À partir de 3 000 € HT", badge: "Décision" },
+-  { service: "Audit technique applicatif", price: "À partir de 3 500 € HT", badge: "Technique" },
+-  { service: "Socle de base sécurité", price: "À partir de 4 700 € HT", badge: "Structuré" },
+-  { service: "Analyse de risque renforcée", price: "À partir de 11 000 € HT", badge: "Renforcé" },
+-  { service: "Accompagnement mensuel", price: "À partir de 1 400 € HT / mois", badge: "Suivi" }
++  {
++    service: "Qualification d'accompagnement",
++    duration: '~1 jour',
++    badge: 'Entrée',
++    note: 'Inclus dans l\'accompagnement',
++  },
++  {
++    service: 'Conseil au projet',
++    duration: '2 à 3 jours',
++    badge: 'DICP ≤ 1/1/1/1',
++    badgeColor: 'text-green-400 border-green-400/30',
++    note: null,
++  },
++  {
++    service: 'Avis sécurité',
++    duration: '2 à 3 jours + rendu',
++    badge: 'DICP ≤ 1/1/1/1',
++    badgeColor: 'text-green-400 border-green-400/30',
++    note: 'Variante du conseil avec livrable formel',
++  },
++  {
++    service: 'Socle de base',
++    duration: '~1 semaine',
++    badge: 'DICP > un 2',
++    badgeColor: 'text-yellow-400 border-yellow-400/30',
++    note: null,
++  },
++  {
++    service: 'Analyse de risque',
++    duration: '~2 semaines',
++    badge: 'DICP ≥ un 4',
++    badgeColor: 'text-red-400 border-red-400/30',
++    note: 'PCA/PRA, PAS et audit technique inclus',
++  },
+ ];
+ 
+ export default function Pricing() {
+@@ -22,14 +49,13 @@ export default function Pricing() {
+           viewport={{ once: true }}
+           transition={{ duration: 0.6 }}
+         >
+-          <div className="font-mono text-xs tracking-wide uppercase text-accent-cyan mb-4">Tarifs indicatifs</div>
++          <div className="font-mono text-xs tracking-wide uppercase text-accent-cyan mb-4">Tarification</div>
+           <h2 className="mb-6 text-balance text-[clamp(2rem,6vw,3rem)] font-medium leading-[1.1] text-foreground">
+-            Des formats adaptés à la criticité et au niveau d'accompagnement.
++            Facturation à la journée, calibrée sur la criticité.
+           </h2>
+           <p className="text-base leading-relaxed text-muted-foreground">
+-            Les tarifs sont indicatifs et peuvent varier selon le nombre d'applications, la complexité technique,
+-            les interlocuteurs, le niveau de documentation disponible, les exigences réglementaires et les
+-            livrables attendus.
++            Le volume de jours dépend du niveau d'accompagnement déterminé lors de la qualification DICP/FIRO.
++            Les durées indiquées sont des estimations. Le taux journalier et le devis détaillé sont fournis après le premier échange.
+           </p>
+         </motion.div>
+ 
+@@ -44,29 +70,32 @@ export default function Pricing() {
+             <thead>
+               <tr className="border-b border-border">
+                 <th className="px-6 py-4 text-left font-mono text-xs tracking-wide uppercase text-muted-foreground">
+-                  Service
++                  Niveau d'accompagnement
+                 </th>
+                 <th className="hidden px-6 py-4 text-center font-mono text-xs tracking-wide uppercase text-muted-foreground sm:table-cell">
+-                  Niveau
++                  Criticité DICP
+                 </th>
+                 <th className="px-4 py-4 text-right font-mono text-xs tracking-wide uppercase text-muted-foreground sm:px-6">
+-                  Tarif indicatif
++                  Charge estimée
+                 </th>
+               </tr>
+             </thead>
+             <tbody className="divide-y divide-border">
+               {pricingRows.map((row, index) => (
+                 <tr key={index} className="transition-colors hover:bg-background/40">
+-                  <td className="px-6 py-4 text-foreground font-medium leading-snug">
+-                    {row.service}
++                  <td className="px-6 py-4 leading-snug">
++                    <div className="font-medium text-foreground">{row.service}</div>
++                    {row.note && (
++                      <div className="mt-0.5 text-xs text-muted-foreground/70">{row.note}</div>
++                    )}
+                   </td>
+                   <td className="hidden px-6 py-4 text-center sm:table-cell">
+-                    <span className="inline-block border border-border px-2.5 py-0.5 font-mono text-[0.65rem] tracking-wide text-muted-foreground">
++                    <span className={`inline-block border px-2.5 py-0.5 font-mono text-[0.6rem] tracking-wide ${row.badgeColor ?? 'text-muted-foreground border-border'}`}>
+                       {row.badge}
+                     </span>
+                   </td>
+                   <td className="px-4 py-4 text-right font-medium text-primary sm:px-6 whitespace-nowrap">
+-                    {row.price}
++                    {row.duration}
+                   </td>
+                 </tr>
+               ))}
+@@ -75,14 +104,27 @@ export default function Pricing() {
+         </motion.div>
+ 
+         <motion.div
+-          className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between"
++          className="mt-6 border border-border/50 bg-background/40 px-5 py-4"
+           initial={{ opacity: 0, y: 10 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true }}
+           transition={{ duration: 0.5 }}
+         >
+           <p className="text-xs text-muted-foreground">
+-            Tous les tarifs sont exprimés hors taxes. Un devis détaillé est fourni après cadrage.
++            Des jours supplémentaires peuvent s'ajouter en cas de présence en comités de calendrier (C2I, CESI, CVASI, MEP), d'ateliers additionnels, de livrables spécifiques ou de retests.
++            Les livrables tiers (PAS, audit technique, PCA/PRA) peuvent être inclus dans l'analyse de risque ou facturés séparément selon le périmètre défini au devis.
++          </p>
++        </motion.div>
++
++        <motion.div
++          className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between"
++          initial={{ opacity: 0, y: 10 }}
++          whileInView={{ opacity: 1, y: 0 }}
++          viewport={{ once: true }}
++          transition={{ duration: 0.5 }}
++        >
++          <p className="text-xs text-muted-foreground">
++            Taux journalier et devis fournis après cadrage initial.
+           </p>
+           <a
+             href="#contact"
+diff --git a/src/app/components/Process.tsx b/src/app/components/Process.tsx
+index a143992..1e76851 100644
+--- a/src/app/components/Process.tsx
++++ b/src/app/components/Process.tsx
+@@ -1,47 +1,31 @@
+ import { motion } from 'motion/react';
++import { ArrowRight, ArrowDown } from 'lucide-react';
+ 
+-const steps = [
++const tracks = [
+   {
+-    number: '01',
+-    title: 'Échange découverte',
+-    description: 'Comprendre votre contexte, vos applications, vos enjeux et vos contraintes.'
++    id: 'conseil',
++    label: 'Conseil au projet',
++    dicp: 'DICP ≤ 1/1/1/1 ou max un 2',
++    badge: 'Léger',
++    badgeColor: 'text-green-400 border-green-400/40 bg-green-400/10',
++    description: 'Échanges verbaux, regard sécurité ponctuel, recommandations orales. Pas de rendu formel, sauf avis sécurité sur demande.',
+   },
+   {
+-    number: '02',
+-    title: 'Qualification',
+-    description:
+-      'Formaliser la fiche projet, les interlocuteurs, les données, les jalons et la criticité DICP/FIRO.'
++    id: 'socle',
++    label: 'Socle de base',
++    dicp: 'DICP avec plus d\'un 2',
++    badge: 'Standard',
++    badgeColor: 'text-yellow-400 border-yellow-400/40 bg-yellow-400/10',
++    description: 'Dossier sécurité structuré : contexte, DICP, risques, matrice, préconisations, plan d\'actions.',
+   },
+   {
+-    number: '03',
+-    title: 'Recommandation',
+-    description:
+-      "Déterminer le niveau d'accompagnement adapté : conseil, avis, socle de base, analyse renforcée ou suivi mensuel."
++    id: 'analyse',
++    label: 'Analyse de risque',
++    dicp: 'DICP avec au moins un 4',
++    badge: 'Renforcé',
++    badgeColor: 'text-red-400 border-red-400/40 bg-red-400/10',
++    description: 'Analyse complète : conformités applicables (DORA, NIS2, RGPD), PCA/PRA, Plan d\'Assurance Sécurité, audit technique.',
+   },
+-  {
+-    number: '04',
+-    title: 'Analyse',
+-    description:
+-      "Étudier les risques métier, l'exposition technique, les mesures existantes et les points d'attention."
+-  },
+-  {
+-    number: '05',
+-    title: 'Formalisation',
+-    description:
+-      "Produire des livrables clairs : synthèse, matrice de risques, recommandations, plan d'action."
+-  },
+-  {
+-    number: '06',
+-    title: 'Restitution',
+-    description:
+-      "Partager les constats, expliquer les risques, prioriser les actions et aider à l'arbitrage."
+-  },
+-  {
+-    number: '07',
+-    title: 'Suivi',
+-    description:
+-      'Accompagner la remédiation, organiser un retest ou mettre en place un suivi mensuel.'
+-  }
+ ];
+ 
+ export default function Process() {
+@@ -57,48 +41,177 @@ export default function Process() {
+         >
+           <div className="font-mono text-xs tracking-wide uppercase text-accent-cyan mb-4">Process client</div>
+           <h2 className="text-balance text-[clamp(2rem,6vw,3rem)] font-medium leading-[1.1] text-foreground">
+-            Du premier échange au plan d'action.
++            Du premier contact à la fin d'accompagnement.
+           </h2>
+         </motion.div>
+ 
+-        <div className="relative">
+-          {/* Vertical connector line (visible sm+) */}
+-          <div className="absolute bottom-0 left-5 top-0 hidden w-px bg-gradient-to-b from-primary/50 via-primary/15 to-transparent sm:block sm:left-6" />
++        {/* Step 1 + 2 — linear */}
++        <div className="flex flex-col items-center gap-0 mb-0">
++          {/* Row: Échange découverte → Qualification */}
++          <motion.div
++            className="flex flex-col items-center gap-0 w-full sm:flex-row sm:items-stretch sm:justify-center sm:gap-0"
++            initial={{ opacity: 0, y: 16 }}
++            whileInView={{ opacity: 1, y: 0 }}
++            viewport={{ once: true }}
++            transition={{ duration: 0.5 }}
++          >
++            <ProcessBox
++              number="01"
++              title="Échange découverte"
++              description="Premier contact : contexte du projet, interlocuteurs, enjeux, contraintes et jalons."
++            />
++            <ArrowConnector />
++            <ProcessBox
++              number="02"
++              title="Qualification d'accompagnement"
++              description="Construction de la fiche projet et scoring DICP/FIRO avec le métier. Le score détermine le niveau d'accompagnement."
++              highlight
++            />
++          </motion.div>
+ 
+-          <div className="space-y-4 sm:space-y-0">
+-            {steps.map((step, index) => (
++          {/* Arrow down to branches */}
++          <motion.div
++            className="flex justify-center py-3"
++            initial={{ opacity: 0 }}
++            whileInView={{ opacity: 1 }}
++            viewport={{ once: true }}
++            transition={{ duration: 0.4, delay: 0.2 }}
++          >
++            <ArrowDown className="h-5 w-5 text-primary/50" strokeWidth={1.5} />
++          </motion.div>
++
++          {/* Decision label */}
++          <motion.div
++            className="mb-4 font-mono text-[0.65rem] tracking-widest uppercase text-muted-foreground"
++            initial={{ opacity: 0 }}
++            whileInView={{ opacity: 1 }}
++            viewport={{ once: true }}
++            transition={{ duration: 0.4, delay: 0.25 }}
++          >
++            Décision d'accompagnement
++          </motion.div>
++
++          {/* 3 tracks */}
++          <div className="grid w-full gap-4 sm:grid-cols-3 mb-4">
++            {tracks.map((track, i) => (
+               <motion.div
+-                key={index}
+-                className="flex gap-0 sm:gap-6"
+-                initial={{ opacity: 0, x: -16 }}
+-                whileInView={{ opacity: 1, x: 0 }}
++                key={track.id}
++                className="flex flex-col border border-border bg-card p-5 hover:border-primary/40 transition-colors"
++                initial={{ opacity: 0, y: 16 }}
++                whileInView={{ opacity: 1, y: 0 }}
+                 viewport={{ once: true }}
+-                transition={{ duration: 0.5, delay: index * 0.07 }}
++                transition={{ duration: 0.5, delay: 0.1 + i * 0.08 }}
+               >
+-                {/* Step number badge */}
+-                <div className="relative hidden sm:flex shrink-0 flex-col items-center pb-4">
+-                  <div className="z-10 flex h-12 w-12 items-center justify-center border border-primary/40 bg-background font-mono text-sm text-primary">
+-                    {step.number}
+-                  </div>
+-                </div>
+-
+-                {/* Content card */}
+-                <div className="mb-4 flex-1 border border-border bg-background p-5 sm:mb-4 sm:p-6 hover:border-primary/40 transition-colors">
+-                  <div className="flex items-start gap-3">
+-                    <span className="shrink-0 mt-0.5 font-mono text-xs text-muted-foreground sm:hidden">
+-                      {step.number}
+-                    </span>
+-                    <div>
+-                      <h3 className="mb-2 text-base sm:text-lg text-foreground font-medium">{step.title}</h3>
+-                      <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+-                    </div>
+-                  </div>
++                <div className="mb-3 flex items-start justify-between gap-2">
++                  <span className="font-mono text-xs text-muted-foreground">{`0${i + 3}`}</span>
++                  <span className={`border px-2 py-0.5 font-mono text-[0.6rem] tracking-wide ${track.badgeColor}`}>
++                    {track.badge}
++                  </span>
+                 </div>
++                <div className="mb-1 text-sm font-medium text-foreground">{track.label}</div>
++                <div className="mb-3 font-mono text-[0.6rem] tracking-wide text-primary">{track.dicp}</div>
++                <p className="text-xs leading-relaxed text-muted-foreground">{track.description}</p>
+               </motion.div>
+             ))}
+           </div>
++
++          {/* Note avis sécurité */}
++          <motion.div
++            className="mb-4 w-full border border-border/50 bg-background/40 px-5 py-3"
++            initial={{ opacity: 0 }}
++            whileInView={{ opacity: 1 }}
++            viewport={{ once: true }}
++            transition={{ duration: 0.4, delay: 0.35 }}
++          >
++            <p className="text-xs text-muted-foreground">
++              <span className="font-medium text-foreground/80">Avis sécurité :</span> variante du conseil au projet avec rendu formel — décision favorable, favorable avec réserves ou défavorable. Facturé avec le rendu en supplément.
++            </p>
++          </motion.div>
++
++          {/* Arrow down */}
++          <motion.div
++            className="flex justify-center py-3"
++            initial={{ opacity: 0 }}
++            whileInView={{ opacity: 1 }}
++            viewport={{ once: true }}
++            transition={{ duration: 0.4, delay: 0.4 }}
++          >
++            <ArrowDown className="h-5 w-5 text-primary/50" strokeWidth={1.5} />
++          </motion.div>
++
++          {/* Row: Recette → Accompagnement terminé */}
++          <motion.div
++            className="flex flex-col items-center gap-0 w-full sm:flex-row sm:items-stretch sm:justify-center sm:gap-0"
++            initial={{ opacity: 0, y: 16 }}
++            whileInView={{ opacity: 1, y: 0 }}
++            viewport={{ once: true }}
++            transition={{ duration: 0.5, delay: 0.45 }}
++          >
++            <ProcessBox
++              number="06"
++              title="Recette"
++              description="Restitution des livrables, explication des risques, priorisation des actions, accompagnement à l'arbitrage."
++            />
++            <ArrowConnector />
++            <ProcessBox
++              number="07"
++              title="Accompagnement terminé"
++              description="Clôture formelle. Suivi de remédiation, retest ou accompagnement mensuel optionnel selon le contexte."
++              end
++            />
++          </motion.div>
+         </div>
++
++        {/* Extra billing note */}
++        <motion.p
++          className="mt-8 text-xs text-muted-foreground border-t border-border pt-6"
++          initial={{ opacity: 0 }}
++          whileInView={{ opacity: 1 }}
++          viewport={{ once: true }}
++          transition={{ duration: 0.4 }}
++        >
++          Des jours supplémentaires peuvent être facturés si nécessaire : présence en comité de calendrier (C2I, CESI, CVASI, MEP), ateliers additionnels ou retest.
++        </motion.p>
+       </div>
+     </section>
+   );
+ }
++
++function ProcessBox({
++  number,
++  title,
++  description,
++  highlight,
++  end,
++}: {
++  number: string;
++  title: string;
++  description: string;
++  highlight?: boolean;
++  end?: boolean;
++}) {
++  return (
++    <div
++      className={`flex w-full flex-col border p-5 sm:w-72 sm:shrink-0 transition-colors ${
++        end
++          ? 'border-primary/30 bg-primary/5'
++          : highlight
++          ? 'border-primary/40 bg-card'
++          : 'border-border bg-card hover:border-primary/30'
++      }`}
++    >
++      <span className="mb-3 font-mono text-xs text-muted-foreground">{number}</span>
++      <div className="mb-2 text-sm font-medium text-foreground leading-snug">{title}</div>
++      <p className="text-xs leading-relaxed text-muted-foreground">{description}</p>
++    </div>
++  );
++}
++
++function ArrowConnector() {
++  return (
++    <div className="flex items-center justify-center py-3 sm:py-0 sm:px-2">
++      <ArrowDown className="h-4 w-4 text-primary/40 sm:hidden" strokeWidth={1.5} />
++      <ArrowRight className="hidden h-4 w-4 text-primary/40 sm:block" strokeWidth={1.5} />
++    </div>
++  );
++}
+diff --git a/src/app/components/Services.tsx b/src/app/components/Services.tsx
+index c5fff6f..0fb9859 100644
+--- a/src/app/components/Services.tsx
++++ b/src/app/components/Services.tsx
+@@ -1,103 +1,75 @@
+ import { motion } from 'motion/react';
+-import { ArrowRight, Search, FileText, Shield, BarChart3, Zap, ScanSearch, CalendarDays } from 'lucide-react';
++import { ArrowRight, Search, MessageSquare, BarChart3, Zap } from 'lucide-react';
+ 
+ const services = [
+   {
+     icon: Search,
+     number: '01',
+     title: "Qualification d'accompagnement",
+-    price: 'À partir de 1 200 € HT',
++    dicp: null,
++    billing: 'Entrée de toute prestation',
++    billingDetail: 'Inclus dans l\'accompagnement',
+     description:
+-      "Cadrer le projet, identifier les interlocuteurs, comprendre les enjeux métier et qualifier la sensibilité DICP/FIRO.",
++      "Premier contact structuré : fiche projet, identification des interlocuteurs, compréhension des enjeux métier et scoring DICP/FIRO. Ce premier rendu détermine le niveau d'accompagnement adapté.",
+     deliverables: [
+-      "Fiche projet",
+-      "Synthèse DICP/FIRO",
+-      "Recommandation du niveau d'accompagnement"
+-    ]
++      'Fiche projet (interlocuteurs, calendrier, criticité)',
++      'Score DICP/FIRO',
++      'Décision d\'accompagnement avec avis et commentaires',
++    ],
+   },
+   {
+-    icon: FileText,
++    icon: MessageSquare,
+     number: '02',
+     title: 'Conseil au projet',
+-    price: 'À partir de 1 400 € HT',
++    dicp: 'DICP ≤ 1/1/1/1 ou max un 2',
++    dipBadgeColor: 'text-green-400 border-green-400/40 bg-green-400/10',
++    billing: '2 à 3 jours travaillés',
++    billingDetail: 'Facturation à la journée',
+     description:
+-      "Accompagnement léger pour projets peu critiques : échanges, recommandations orales, aide à la priorisation et regard sécurité ponctuel.",
++      "Pour les projets peu critiques : suivi du projet, échanges verbaux, recommandations orales et regard sécurité ponctuel. Pas de rendu formel.",
+     deliverables: [
+-      "Recommandations orales",
+-      "Compte rendu court en option"
+-    ]
+-  },
+-  {
+-    icon: Shield,
+-    number: '03',
+-    title: 'Avis sécurité projet',
+-    price: 'À partir de 3 000 € HT',
+-    description:
+-      "Formaliser une décision avant livraison, jalon projet ou mise en production : favorable, favorable avec réserves ou défavorable.",
+-    deliverables: [
+-      "Avis sécurité",
+-      "Réserves principales",
+-      "Conditions de mise en production",
+-      "Recommandations prioritaires"
+-    ]
++      'Recommandations orales',
++      'Échanges et conseils ponctuels',
++    ],
++    note: 'Avis sécurité : même prestation avec rendu formel (favorable / favorable avec réserves / défavorable). Facturation journée + rendu.',
+   },
+   {
+     icon: BarChart3,
+-    number: '04',
+-    title: 'Socle de base sécurité',
+-    price: 'À partir de 4 700 € HT',
++    number: '03',
++    title: 'Socle de base',
++    dicp: 'DICP avec plus d\'un 2',
++    dipBadgeColor: 'text-yellow-400 border-yellow-400/40 bg-yellow-400/10',
++    billing: '~1 semaine',
++    billingDetail: 'Facturation à la journée',
+     description:
+-      "Produire un dossier sécurité structuré pour une application sensible : contexte, DICP, risques, matrice, préconisations et plan d'action.",
++      "Dossier sécurité structuré pour une application sensible. Analyse des risques métier et techniques, matrice de risques, préconisations priorisées et plan d'actions.",
+     deliverables: [
+-      "Dossier sécurité",
+-      "Matrice de risques",
+-      "Plan d'action priorisé"
+-    ]
++      'Introduction et contexte projet',
++      'Analyse DICP/FIRO',
++      'Risques identifiés avec matrice de criticité',
++      'Préconisations',
++      "Plan d'actions priorisé",
++    ],
+   },
+   {
+     icon: Zap,
+-    number: '05',
+-    title: 'Analyse de risque renforcée',
+-    price: 'À partir de 11 000 € HT',
+-    description:
+-      "Analyse approfondie pour application critique ou contexte réglementaire : risques, conformité applicable, PCA/PRA, Plan d'Assurance Sécurité, audit technique et plan d'action détaillé.",
+-    deliverables: [
+-      "Analyse de risque complète",
+-      "Analyse d'écarts",
+-      "Plan d'Assurance Sécurité",
+-      "Éléments PCA/PRA si inclus",
+-      "Audit technique si inclus",
+-      "Plan d'action détaillé"
+-    ]
+-  },
+-  {
+-    icon: ScanSearch,
+-    number: '06',
+-    title: 'Audit technique applicatif',
+-    price: 'À partir de 3 500 € HT',
++    number: '04',
++    title: 'Analyse de risque',
++    dicp: 'DICP avec au moins un 4',
++    dipBadgeColor: 'text-red-400 border-red-400/40 bg-red-400/10',
++    billing: '~2 semaines',
++    billingDetail: 'Facturation à la journée',
+     description:
+-      "Évaluer l'exposition et l'hygiène sécurité d'une application sans se positionner comme un pentest intrusif.",
++      "Analyse approfondie pour application critique ou contexte réglementaire. Conformités applicables, PCA/PRA, Plan d'Assurance Sécurité et audit technique de l'application.",
+     deliverables: [
+-      "Cartographie d'exposition",
+-      "Analyse TLS, headers, cookies, CORS, CSP",
+-      "Vulnérabilités connues potentielles",
+-      "Recommandations techniques"
+-    ]
++      'Analyse de risque complète',
++      'Analyse d\'écarts (DORA, NIS2, RGPD, OSE…)',
++      'Plan d\'Assurance Sécurité (PAS)',
++      'Éléments PCA/PRA',
++      'Audit technique applicatif',
++      "Plan d'actions détaillé",
++    ],
+   },
+-  {
+-    icon: CalendarDays,
+-    number: '07',
+-    title: 'Accompagnement mensuel',
+-    price: 'À partir de 1 400 € HT / mois',
+-    description:
+-      "Suivi régulier des risques applicatifs, des corrections, des décisions projet et des jalons sécurité.",
+-    deliverables: [
+-      "Point mensuel",
+-      "Suivi des risques",
+-      "Plan d'action mis à jour",
+-      "Compte rendu synthétique"
+-    ]
+-  }
+ ];
+ 
+ export default function Services() {
+@@ -113,19 +85,18 @@ export default function Services() {
+         >
+           <div className="font-mono text-xs tracking-wide uppercase text-accent-cyan mb-4">Services</div>
+           <h2 className="mb-6 text-balance text-[clamp(2rem,6vw,3rem)] font-medium leading-[1.1] text-foreground">
+-            Un service principal, plusieurs niveaux de rendu.
++            Un service, plusieurs niveaux de rendu.
+           </h2>
+           <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+             Agartha propose un service central :{' '}
+             <span className="font-medium text-foreground">
+-              Diagnostic &amp; accompagnement sécurité applicative.
++              diagnostic &amp; accompagnement sécurité applicative.
+             </span>{' '}
+-            Selon la criticité, l'exposition et le contexte projet, ce service se décline en plusieurs niveaux
+-            d'intervention.
++            La qualification DICP/FIRO détermine le niveau d'intervention adapté à la criticité réelle du projet.
+           </p>
+         </motion.div>
+ 
+-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
++        <div className="grid gap-6 sm:grid-cols-2 lg:gap-8">
+           {services.map((service, index) => (
+             <motion.div
+               key={index}
+@@ -133,19 +104,38 @@ export default function Services() {
+               initial={{ opacity: 0, y: 20 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               viewport={{ once: true }}
+-              transition={{ duration: 0.6, delay: (index % 3) * 0.1 }}
++              transition={{ duration: 0.6, delay: (index % 2) * 0.1 }}
+             >
+               <div className="flex-1 p-6 sm:p-7">
+-                <div className="mb-5 flex items-start justify-between">
+-                  <service.icon className="h-7 w-7 text-primary" strokeWidth={1.5} />
++                {/* Header */}
++                <div className="mb-5 flex items-start justify-between gap-3">
++                  <service.icon className="h-6 w-6 text-primary" strokeWidth={1.5} />
+                   <span className="font-mono text-3xl font-light text-border">{service.number}</span>
+                 </div>
++
++                {/* Title */}
+                 <h3 className="mb-2 text-base sm:text-lg text-foreground leading-snug">{service.title}</h3>
+-                <p className="mb-4 text-sm font-medium text-primary">{service.price}</p>
++
++                {/* DICP badge */}
++                {service.dicp && (
++                  <span className={`mb-3 inline-block border px-2.5 py-0.5 font-mono text-[0.6rem] tracking-wide ${service.dipBadgeColor}`}>
++                    {service.dicp}
++                  </span>
++                )}
++
++                {/* Billing */}
++                <div className="mb-4 flex items-baseline gap-2">
++                  <span className="text-sm font-medium text-primary">{service.billing}</span>
++                  <span className="text-xs text-muted-foreground">{service.billingDetail}</span>
++                </div>
++
++                {/* Description */}
+                 <p className="mb-5 text-sm text-muted-foreground leading-relaxed">{service.description}</p>
++
++                {/* Deliverables */}
+                 <div>
+                   <div className="mb-2 font-mono text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+-                    Livrables
++                    {service.number === '02' ? 'Échanges' : 'Livrables'}
+                   </div>
+                   <ul className="space-y-1.5">
+                     {service.deliverables.map((item, i) => (
+@@ -156,7 +146,18 @@ export default function Services() {
+                     ))}
+                   </ul>
+                 </div>
++
++                {/* Note avis sécurité */}
++                {'note' in service && service.note && (
++                  <div className="mt-4 border-t border-border pt-4">
++                    <p className="text-xs leading-relaxed text-muted-foreground/70">
++                      <span className="text-foreground/60 font-medium">Variante — </span>
++                      {service.note}
++                    </p>
++                  </div>
++                )}
+               </div>
++
+               <div className="border-t border-border p-4">
+                 <a
+                   href="#contact"
+@@ -169,6 +170,16 @@ export default function Services() {
+             </motion.div>
+           ))}
+         </div>
++
++        <motion.p
++          className="mt-8 text-xs text-muted-foreground border-t border-border pt-6"
++          initial={{ opacity: 0 }}
++          whileInView={{ opacity: 1 }}
++          viewport={{ once: true }}
++          transition={{ duration: 0.4 }}
++        >
++          Des jours supplémentaires peuvent être facturés en cas de besoin : présence en comités de calendrier (C2I, CESI, CVASI, MEP), ateliers additionnels, retest ou livrables spécifiques.
++        </motion.p>
+       </div>
+     </section>
+   );
+-- 
+2.43.0
+
