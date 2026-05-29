@@ -2,13 +2,41 @@ import { motion } from 'motion/react';
 import { ArrowRight } from 'lucide-react';
 
 const pricingRows = [
-  { service: "Qualification d'accompagnement", price: "À partir de 1 200 € HT", badge: "Entrée" },
-  { service: "Conseil au projet", price: "À partir de 1 400 € HT", badge: "Léger" },
-  { service: "Avis sécurité projet", price: "À partir de 3 000 € HT", badge: "Décision" },
-  { service: "Audit technique applicatif", price: "À partir de 3 500 € HT", badge: "Technique" },
-  { service: "Socle de base sécurité", price: "À partir de 4 700 € HT", badge: "Structuré" },
-  { service: "Analyse de risque renforcée", price: "À partir de 11 000 € HT", badge: "Renforcé" },
-  { service: "Accompagnement mensuel", price: "À partir de 1 400 € HT / mois", badge: "Suivi" }
+  {
+    service: "Qualification d'accompagnement",
+    duration: '~1 jour',
+    badge: 'Entrée',
+    badgeColor: null,
+    note: 'Inclus dans l\'accompagnement',
+  },
+  {
+    service: 'Conseil au projet',
+    duration: '2 à 3 jours',
+    badge: 'DICP ≤ 1/1/1/1',
+    badgeColor: 'text-green-400 border-green-400/30',
+    note: null,
+  },
+  {
+    service: 'Avis sécurité',
+    duration: '2 à 3 jours + rendu',
+    badge: 'DICP ≤ 1/1/1/1',
+    badgeColor: 'text-green-400 border-green-400/30',
+    note: 'Variante du conseil avec livrable formel',
+  },
+  {
+    service: 'Socle de base',
+    duration: '~1 semaine',
+    badge: 'DICP > un 2',
+    badgeColor: 'text-yellow-400 border-yellow-400/30',
+    note: null,
+  },
+  {
+    service: 'Analyse de risque',
+    duration: '~2 semaines',
+    badge: 'DICP ≥ un 4',
+    badgeColor: 'text-red-400 border-red-400/30',
+    note: 'PCA/PRA, PAS et audit technique inclus',
+  },
 ];
 
 export default function Pricing() {
@@ -22,14 +50,13 @@ export default function Pricing() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="font-mono text-xs tracking-wide uppercase text-accent-cyan mb-4">Tarifs indicatifs</div>
+          <div className="font-mono text-xs tracking-wide uppercase text-accent-cyan mb-4">Tarification</div>
           <h2 className="mb-6 text-balance text-[clamp(2rem,6vw,3rem)] font-medium leading-[1.1] text-foreground">
-            Des formats adaptés à la criticité et au niveau d'accompagnement.
+            Facturation à la journée, calibrée sur la criticité.
           </h2>
           <p className="text-base leading-relaxed text-muted-foreground">
-            Les tarifs sont indicatifs et peuvent varier selon le nombre d'applications, la complexité technique,
-            les interlocuteurs, le niveau de documentation disponible, les exigences réglementaires et les
-            livrables attendus.
+            Le volume de jours dépend du niveau d'accompagnement déterminé lors de la qualification DICP/FIRO.
+            Les durées indiquées sont des estimations. Le taux journalier et le devis détaillé sont fournis après le premier échange.
           </p>
         </motion.div>
 
@@ -44,29 +71,32 @@ export default function Pricing() {
             <thead>
               <tr className="border-b border-border">
                 <th className="px-6 py-4 text-left font-mono text-xs tracking-wide uppercase text-muted-foreground">
-                  Service
+                  Niveau d'accompagnement
                 </th>
                 <th className="hidden px-6 py-4 text-center font-mono text-xs tracking-wide uppercase text-muted-foreground sm:table-cell">
-                  Niveau
+                  Criticité DICP
                 </th>
                 <th className="px-4 py-4 text-right font-mono text-xs tracking-wide uppercase text-muted-foreground sm:px-6">
-                  Tarif indicatif
+                  Charge estimée
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {pricingRows.map((row, index) => (
                 <tr key={index} className="transition-colors hover:bg-background/40">
-                  <td className="px-6 py-4 text-foreground font-medium leading-snug">
-                    {row.service}
+                  <td className="px-6 py-4 leading-snug">
+                    <div className="font-medium text-foreground">{row.service}</div>
+                    {row.note && (
+                      <div className="mt-0.5 text-xs text-muted-foreground/70">{row.note}</div>
+                    )}
                   </td>
                   <td className="hidden px-6 py-4 text-center sm:table-cell">
-                    <span className="inline-block border border-border px-2.5 py-0.5 font-mono text-[0.65rem] tracking-wide text-muted-foreground">
+                    <span className={`inline-block border px-2.5 py-0.5 font-mono text-[0.6rem] tracking-wide ${row.badgeColor ?? 'text-muted-foreground border-border'}`}>
                       {row.badge}
                     </span>
                   </td>
                   <td className="px-4 py-4 text-right font-medium text-primary sm:px-6 whitespace-nowrap">
-                    {row.price}
+                    {row.duration}
                   </td>
                 </tr>
               ))}
@@ -75,14 +105,27 @@ export default function Pricing() {
         </motion.div>
 
         <motion.div
-          className="mt-8 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between"
+          className="mt-6 border border-border/50 bg-background/40 px-5 py-4"
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
           <p className="text-xs text-muted-foreground">
-            Tous les tarifs sont exprimés hors taxes. Un devis détaillé est fourni après cadrage.
+            Des jours supplémentaires peuvent s'ajouter : présence en comités de calendrier (C2I, CESI, CVASI, MEP), ateliers additionnels, livrables spécifiques ou retests.
+            Les livrables tiers (PAS, audit technique, PCA/PRA) peuvent être inclus dans l'analyse de risque ou facturés séparément selon le périmètre défini au devis.
+          </p>
+        </motion.div>
+
+        <motion.div
+          className="mt-6 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <p className="text-xs text-muted-foreground">
+            Taux journalier et devis fournis après cadrage initial.
           </p>
           <a
             href="#contact"
