@@ -1,5 +1,38 @@
 import { motion } from 'motion/react';
-import { FileCheck, Shield } from 'lucide-react';
+import { GitBranch, Landmark, Network, Lock, RefreshCw, ClipboardList } from 'lucide-react';
+
+const frameworks = [
+  {
+    icon: GitBranch,
+    title: 'EBIOS Risk Manager',
+    description: 'Approche structurée d\'analyse de risques et de scénarios.'
+  },
+  {
+    icon: Landmark,
+    title: 'DORA',
+    description: 'Gestion des risques TIC, continuité, prestataires et exigences financières.'
+  },
+  {
+    icon: Network,
+    title: 'NIS2 / OSE',
+    description: 'Préparation aux exigences de cybersécurité et analyse d\'écarts.'
+  },
+  {
+    icon: Lock,
+    title: 'RGPD',
+    description: 'Prise en compte des données personnelles, risques et mesures associées.'
+  },
+  {
+    icon: RefreshCw,
+    title: 'PCA / PRA',
+    description: 'Réflexion sur la continuité et la reprise d\'activité selon le niveau de criticité.'
+  },
+  {
+    icon: ClipboardList,
+    title: 'PAS',
+    description: "Plan d'Assurance Sécurité pour cadrer les exigences et engagements projet."
+  }
+];
 
 export default function Compliance() {
   return (
@@ -12,72 +45,50 @@ export default function Compliance() {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="text-xs tracking-wide uppercase text-accent-cyan mb-4">Contexte réglementaire</div>
-          <h2 className="text-balance text-[clamp(2rem,6vw,3rem)] font-medium leading-[1.1] text-foreground">
-            DORA & NIS2 : renforcer votre maîtrise des risques
+          <div className="font-mono text-xs tracking-wide uppercase text-accent-cyan mb-4">Conformité & référentiels</div>
+          <h2 className="mb-6 text-balance text-[clamp(2rem,6vw,3rem)] font-medium leading-[1.1] text-foreground">
+            Aligner la sécurité applicative avec vos exigences.
           </h2>
-          <p className="text-muted-foreground mt-6 leading-relaxed">
-            Agartha n'intervient pas comme cabinet juridique, mais comme partenaire technique pour identifier, documenter et réduire les risques de sécurité applicative.
+          <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+            Agartha peut accompagner l'analyse des risques et la préparation aux exigences applicables selon le
+            contexte. Notre intervention est orientée aide à la décision et analyse d'écarts — non certification
+            réglementaire.
           </p>
         </motion.div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:gap-8">
-          <motion.div
-            className="border border-border p-6 sm:p-8 lg:p-10 hover:border-primary/50 transition-colors"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Shield className="w-10 h-10 mb-6 text-primary" strokeWidth={1.5} />
-            <h3 className="mb-4 text-xl sm:text-2xl text-foreground">DORA</h3>
-            <p className="text-muted-foreground leading-relaxed mb-6">
-              Nous fournissons des éléments utiles dans un contexte DORA pour améliorer la visibilité sur les risques et structurer les actions de réduction des risques applicatifs.
-            </p>
-            <ul className="space-y-3 text-muted-foreground">
-              <li className="flex items-start gap-3">
-                <span className="w-1 h-1 bg-primary rounded-full mt-2.5 flex-shrink-0"></span>
-                <span>Documentation des risques applicatifs et techniques</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="w-1 h-1 bg-primary rounded-full mt-2.5 flex-shrink-0"></span>
-                <span>Preuves de contrôle sur les points critiques</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="w-1 h-1 bg-primary rounded-full mt-2.5 flex-shrink-0"></span>
-                <span>Plan d'action priorisé et appui technique à la remédiation</span>
-              </li>
-            </ul>
-          </motion.div>
-
-          <motion.div
-            className="border border-border p-6 sm:p-8 lg:p-10 hover:border-primary/50 transition-colors"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <FileCheck className="w-10 h-10 mb-6 text-primary" strokeWidth={1.5} />
-            <h3 className="mb-4 text-xl sm:text-2xl text-foreground">NIS2</h3>
-            <p className="text-muted-foreground leading-relaxed mb-6">
-              Dans un cadre NIS2, nous vous aidons à renforcer les pratiques de sécurité applicative avec une approche opérationnelle orientée réduction des risques.
-            </p>
-            <ul className="space-y-3 text-muted-foreground">
-              <li className="flex items-start gap-3">
-                <span className="w-1 h-1 bg-primary rounded-full mt-2.5 flex-shrink-0"></span>
-                <span>Cartographie des applications et flux exposés</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="w-1 h-1 bg-primary rounded-full mt-2.5 flex-shrink-0"></span>
-                <span>Évaluation des mesures en place et écarts de contrôle</span>
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="w-1 h-1 bg-primary rounded-full mt-2.5 flex-shrink-0"></span>
-                <span>Restitution exploitable pour vos équipes DSI et RSSI</span>
-              </li>
-            </ul>
-          </motion.div>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+          {frameworks.map((fw, index) => (
+            <motion.div
+              key={index}
+              className="border border-border bg-card p-6 sm:p-7 hover:border-primary/50 transition-colors"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: (index % 3) * 0.1 }}
+            >
+              <fw.icon className="mb-5 h-7 w-7 text-primary" strokeWidth={1.5} />
+              <h3 className="mb-3 text-base sm:text-lg font-medium text-foreground">{fw.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{fw.description}</p>
+            </motion.div>
+          ))}
         </div>
+
+        <motion.div
+          className="mt-10 border border-border/40 bg-card/40 p-5 sm:p-6"
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+        >
+          <p className="text-sm text-muted-foreground">
+            Agartha n'intervient pas comme cabinet juridique ou organisme certificateur. Nos prestations sont
+            orientées{' '}
+            <span className="font-medium text-foreground">
+              analyse d'écarts, préparation à l'exigence et aide à la décision
+            </span>
+            . La conformité réglementaire finale reste sous la responsabilité du client.
+          </p>
+        </motion.div>
       </div>
     </section>
   );
