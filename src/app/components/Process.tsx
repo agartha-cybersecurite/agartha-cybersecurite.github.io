@@ -5,7 +5,6 @@ const tracks = [
   {
     id: 'conseil',
     label: 'Conseil au projet',
-    dicp: 'DICP ≤ 1/1/1/1 ou max un 2',
     badge: 'Léger',
     badgeColor: 'text-green-400 border-green-400/40 bg-green-400/10',
     description: 'Échanges verbaux, regard sécurité ponctuel, recommandations orales. Pas de rendu formel, sauf avis sécurité sur demande.',
@@ -13,7 +12,6 @@ const tracks = [
   {
     id: 'socle',
     label: 'Socle de base',
-    dicp: 'DICP avec plus d\'un 2',
     badge: 'Standard',
     badgeColor: 'text-yellow-400 border-yellow-400/40 bg-yellow-400/10',
     description: 'Dossier sécurité structuré : contexte, DICP, risques, matrice, préconisations, plan d\'actions.',
@@ -21,7 +19,6 @@ const tracks = [
   {
     id: 'analyse',
     label: 'Analyse de risque',
-    dicp: 'DICP avec au moins un 4',
     badge: 'Renforcé',
     badgeColor: 'text-red-400 border-red-400/40 bg-red-400/10',
     description: 'Analyse complète : conformités applicables (DORA, NIS2, RGPD), PCA/PRA, Plan d\'Assurance Sécurité, audit technique.',
